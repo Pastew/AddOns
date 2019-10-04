@@ -1,0 +1,12 @@
+﻿## Interface: 11300
+## Title: WoWpoPolsku-Bubbles
+## Version: CLASSIC.01
+## Notes: Addon wyswietla przetłumaczone dymki NPC
+## Author: Platine
+## eMail: platine.wow@gmail.com
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: BB_PM, BB_PS, BB_TR
+
+Bubbles_PL.lua
+WoWpoPolsku_Bubbles.lua
