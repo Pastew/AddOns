@@ -1,4 +1,4 @@
-﻿-- Addon: WoWpoPolsku-BB (version: 8.08) 2019.08.10
+﻿-- Addon: WoWpoPolsku-BB (version: CLASSIC.01) 2019.08.10
 -- Description: AddOn displays translated Bubbled of NPC.
 -- Autor: Platine  (e-mail: platine.wow@gmail.com)
 -- WWW: https://wowpopolsku.pl

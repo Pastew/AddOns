@@ -1,4 +1,4 @@
-﻿-- Addon: WoWpoPolsku_Quests (wersja: CLASSIC.01) 2018.08.28
+﻿-- Addon: WoWpoPolsku_Quests (wersja: CLASSIC.04) 2021.03.28
 -- Opis: AddOn wyświetla przetłumaczone questy w języku polskim.
 -- Autor: Platine  (e-mail: platine.wow@gmail.com)
 -- Addon project page: https://wowpopolsku.pl
@@ -48,7 +48,7 @@ local QTR_Reklama = {
       ON = "Reklamuj dodatek na czacie kanału nr:",
       PERIOD= "Okres czasu pomiędzy kolejnymi reklamami:",
       CHOICE= "Który tekst wyświetlać? (gdy zaznaczysz oba, to naprzemian):",
-      OTHER1= "tłumacz w dodatku QuestGuru ",
+      OTHER1= "tłumacz w dodatku ClassicQuestLog ",
       OTHER2= "tłumacz w dodatku Immersion ",
       OTHER3= "tłumacz w dodatku Storyline ",
       ACTIV1= "(aktywny)",
@@ -63,6 +63,7 @@ local last_text = 0;
 local curr_trans = "1";
 local curr_goss = "X";
 local curr_hash = 0;
+local QTR_first_show = 0;
 local Original_Font1 = "Fonts\\MORPHEUS.ttf";
 local Original_Font2 = "Fonts\\FRIZQT__.ttf";
 local p_race = {
@@ -80,7 +81,7 @@ local p_race = {
       ["Nightborne"] = { M1="Dziecię Nocy", D1="dziecięcia nocy", C1="dziecięciu nocy", B1="dziecię nocy", N1="dziecięcem nocy", K1="dziecięciu nocy", W1="Dziecię Nocy", M2="Dziecię Nocy", D2="dziecięcia nocy", C2="dziecięciu nocy", B2="dziecię nocy", N2="dziecięcem nocy", K2="dziecięciu nocy", W2="Dziecię Nocy" },
       ["Night Elf"] = { M1="Nocny Elf", D1="nocnego elfa", C1="nocnemu elfowi", B1="nocnego elfa", N1="nocnym elfem", K1="nocnym elfie", W1="Nocny Elfie", M2="Nocna Elfka", D2="nocnej elfki", C2="nocnej elfce", B2="nocną elfkę", N2="nocną elfką", K2="nocnej elfce", W2="Nocna Elfko" },
       ["Orc"] = { M1="Ork", D1="orka", C1="orkowi", B1="orka", N1="orkiem", K1="orku", W1="Orku", M2="Orczyca", D2="orczycy", C2="orczycy", B2="orczycę", N2="orczycą", K2="orczycy", W2="Orczyco" },
-      ["Pandaren"] = { M1="Pandaren", D1="pandarena", C1="pondarenowi", B1="pandarena", N1="pandarenem", K1="pandarenie", W1="Pandarenie", M2="Pandarenka", D2="pandarenki", C2="pondarence", B2="pandarenkę", N2="pandarenką", K2="pandarence", W2="Pandarenko" },
+      ["Pandaren"] = { M1="Pandaren", D1="pandarena", C1="pandarenowi", B1="pandarena", N1="pandarenem", K1="pandarenie", W1="Pandarenie", M2="Pandarenka", D2="pandarenki", C2="pandarence", B2="pandarenkę", N2="pandarenką", K2="pandarence", W2="Pandarenko" },
       ["Tauren"] = { M1="Tauren", D1="taurena", C1="taurenowi", B1="taurena", N1="taurenem", K1="taurenie", W1="Taurenie", M2="Taurenka", D2="taurenki", C2="taurence", B2="taurenkę", N2="taurenką", K2="taurence", W2="Taurenko" },
       ["Troll"] = { M1="Troll", D1="trolla", C1="trollowi", B1="trolla", N1="trollem", K1="trollu", W1="Trollu", M2="Trollica", D2="trollicy", C2="trollicy", B2="trollicę", N2="trollicą", K2="trollicy", W2="Trollico" },
       ["Undead"] = { M1="Nieumarły", D1="nieumarłego", C1="nieumarłemu", B1="nieumarłego", N1="nieumarłym", K1="nieumarłym", W1="Nieumarły", M2="Nieumarła", D2="nieumarłej", C2="nieumarłej", B2="nieumarłą", N2="nieumarłą", K2="nieumarłej", W2="Nieumarła" },
@@ -98,7 +99,7 @@ local p_class = {
       ["Priest"] = { M1="Kapłan", D1="kapłana", C1="kapłanowi", B1="kapłana", N1="kapłanem", K1="kapłanie", W1="Kapłanie", M2="Kapłanka", D2="kapłanki", C2="kapłance", B2="kapłankę", N2="kapłanką", K2="kapłance", W2="Kapłanko" },
       ["Rogue"] = { M1="Łotrzyk", D1="łotrzyka", C1="łotrzykowi", B1="łotrzyka", N1="łotrzykiem", K1="łotrzyku", W1="Łotrzyku", M2="Łotrzyca", D2="łotrzycy", C2="łotrzycy", B2="łotrzycę", N2="łotrzycą", K2="łotrzycy", W2="Łotrzyco" },
       ["Shaman"] = { M1="Szaman", D1="szamana", C1="szamanowi", B1="szamana", N1="szamanem", K1="szamanie", W1="Szamanie", M2="Szamanka", D2="szamanki", C2="szamance", B2="szamankę", N2="szamanką", K2="szamance", W2="Szamanko" },
-      ["Warlock"] = { M1="Czarnoksiężnik", D1="czarnoksiężnika", C1="czarnoksiężnikowi", B1="czarnoksiężnika", N1="czarnoksiężnikiem", K1="czarnoksiężniku", W1="Czarnoksiężniku", M2="Czarnoksiężniczka", D2="czarnoksiężniczki", C2="czarnoksiężniczce", B2="czarnoksiężniczkę", N2="czarnoksiężniczką", K2="czarnoksiężniczce", W2="Czarnoksiężniczko" },
+      ["Warlock"] = { M1="Czarnoksiężnik", D1="czarnoksiężnika", C1="czarnoksiężnikowi", B1="czarnoksiężnika", N1="czarnoksiężnikiem", K1="czarnoksiężniku", W1="Czarnoksiężniku", M2="Czarownica", D2="czarownicy", C2="czarownicy", B2="czarownicę", N2="czarownicą", K2="czarownicy", W2="Czarownico" },
       ["Warrior"] = { M1="Wojownik", D1="wojownika", C1="wojownikowi", B1="wojownika", N1="wojownikiem", K1="wojowniku", W1="Wojowniku", M2="Wojowniczka", D2="wojowniczki", C2="wojowniczce", B2="wojowniczkę", N2="wojowniczką", K2="wojowniczce", W2="Wojowniczko" }, }
 if (p_race[QTR_race]) then      
    player_race = { M1=p_race[QTR_race].M1, D1=p_race[QTR_race].D1, C1=p_race[QTR_race].C1, B1=p_race[QTR_race].B1, N1=p_race[QTR_race].N1, K1=p_race[QTR_race].K1, W1=p_race[QTR_race].W1, M2=p_race[QTR_race].M2, D2=p_race[QTR_race].D2, C2=p_race[QTR_race].C2, B2=p_race[QTR_race].B2, N2=p_race[QTR_race].N2, K2=p_race[QTR_race].K2, W2=p_race[QTR_race].W2 };
@@ -111,6 +112,42 @@ if (p_class[QTR_class]) then
 else
    player_class = { M1=QTR_class, D1=QTR_class, C1=QTR_class, B1=QTR_class, N1=QTR_class, K1=QTR_class, W1=QTR_class, M2=QTR_class, D2=QTR_class, C2=QTR_class, B2=QTR_class, N2=QTR_class, K2=QTR_class, W2=QTR_class };
    print ("|cff55ff00QTR - nowa klasa: "..QTR_class);
+end
+
+
+
+function Spr_Gender(msg)
+   local nr_1, nr_2, nr_3 = 0;
+   local QTR_forma = "";
+   local nr_poz = string.find(msg, "YOUR_GENDER");    -- gdy nie znalazł, jest: nil; liczy od 1
+   while (nr_poz and nr_poz>0) do
+      nr_1 = nr_poz + 1;   
+      while (string.sub(msg, nr_1, nr_1) ~= "(") do   -- szukaj nawiasu otwierającego
+         nr_1 = nr_1 + 1;
+      end
+      if (string.sub(msg, nr_1, nr_1) == "(") then
+         nr_2 =  nr_1 + 1;
+         while (string.sub(msg, nr_2, nr_2) ~= ";") do   -- szukaj średnika oddzielającego
+            nr_2 = nr_2 + 1;
+         end
+         if (string.sub(msg, nr_2, nr_2) == ";") then
+            nr_3 = nr_2 + 1;
+            while (string.sub(msg, nr_3, nr_3) ~= ")") do   -- szykaj nawiasu zamykającego
+               nr_3 = nr_3 + 1;
+            end
+            if (string.sub(msg, nr_3, nr_3) == ")") then
+               if (QTR_sex==3) then        -- forma żeńska
+                  QTR_forma = string.sub(msg,nr_2+1,nr_3-1);
+               else                        -- forma męska
+                  QTR_forma = string.sub(msg,nr_1+1,nr_2-1);
+               end
+               msg = string.sub(msg,1,nr_poz-1) .. QTR_forma .. string.sub(msg,nr_3+1);
+            end   
+         end
+      end
+      nr_poz = string.find(msg, "YOUR_GENDER");
+   end
+   return msg;
 end
 
 
@@ -240,7 +277,7 @@ function QTR_SlashCommand(msg)
          QTR_ToggleButton0:Enable();
          QTR_ToggleButton1:Enable();
          QTR_ToggleButton2:Enable();
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:Enable();
          end
          if (isImmersion()) then
@@ -257,7 +294,7 @@ function QTR_SlashCommand(msg)
          QTR_ToggleButton0:Disable();
          QTR_ToggleButton1:Disable();
          QTR_ToggleButton2:Disable();
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:Disable();
          end
          if (isImmersion()) then
@@ -608,13 +645,13 @@ function QTR_BlizzardOptions()
   QTRIntegration1:ClearAllPoints();
   QTRIntegration1:SetPoint("TOPLEFT", QTRIntegration0, "TOPRIGHT", 15, 0);
   QTRIntegration1:SetFont(QTR_Font2, 13);
-  QTRIntegration1:SetText("QuestGuru,  Immersion,  Storyline");
+  QTRIntegration1:SetText("ClassicQuestLog,  Immersion,  Storyline");
 
   local QTRCheckOther1 = CreateFrame("CheckButton", "QTRCheckOther1", QTROptions, "OptionsCheckButtonTemplate");
   QTRCheckOther1:SetPoint("TOPLEFT", QTRIntegration1, "BOTTOMLEFT", -10, -10);
   QTRCheckOther1:SetScript("OnClick", function(self) if (QTR_PS["other1"]=="0") then QTR_PS["other1"]="1" else QTR_PS["other1"]="0" end; end);
   QTRCheckOther1Text:SetFont(QTR_Font2, 13);
-  if (QuestGuru ~= nil ) then
+  if (ClassicQuestLog ~= nil ) then
      QTRCheckOther1Text:SetText(QTR_Reklama.OTHER1..QTR_Reklama.ACTIV1);
   else
      QTRCheckOther1Text:SetText(QTR_Reklama.OTHER1..QTR_Reklama.ACTIV2);
@@ -868,6 +905,7 @@ function QTR_OnLoad()
   QuestLogDetailScrollFrame:HookScript("OnShow", QTR_Prepare1sek);
   EmptyQuestLogFrame:HookScript("OnShow", QTR_EmptyQuestLog);
   hooksecurefunc("SelectQuestLogEntry", QTR_Prepare1sek);
+--  QuestLogPopupDetailFrame:HookScript("OnShow", QTR_PrepareReload);
 
 --  QuestLogTitleButton:HookScript("OnClick", QTR_PrepareReload);
 --  if hooksecurefunc then
@@ -876,26 +914,26 @@ function QTR_OnLoad()
 
 --   hooksecurefunc("QuestMapFrame_ShowQuestDetails", QTR_PrepareReload);
    
-   isQuestGuru();
+   isClassicQuestLog();
    isImmersion();
    isStoryline();
 end
 
 
-function isQuestGuru()
-   if (QuestGuru ~= nil ) then
+function isClassicQuestLog()
+   if (ClassicQuestLog ~= nil ) then
       if (QTR_ToggleButton3==nil) then
-         -- przycisk z nr ID questu w QuestGuru
-         QTR_ToggleButton3 = CreateFrame("Button",nil, QuestGuru, "UIPanelButtonTemplate");
+         -- przycisk z nr ID questu w ClassicQuestLog
+         QTR_ToggleButton3 = CreateFrame("Button",nil, ClassicQuestLog, "UIPanelButtonTemplate");
          QTR_ToggleButton3:SetWidth(150);
          QTR_ToggleButton3:SetHeight(20);
          QTR_ToggleButton3:SetText("Quest ID=?");
          QTR_ToggleButton3:Show();
          QTR_ToggleButton3:ClearAllPoints();
-         QTR_ToggleButton3:SetPoint("TOPLEFT", QuestGuru, "TOPLEFT", 330, -33);
+         QTR_ToggleButton3:SetPoint("TOPLEFT", ClassicQuestLog, "TOPLEFT", 330, -33);
          QTR_ToggleButton3:SetScript("OnClick", QTR_ON_OFF);
          -- uaktualniono dane w QuestLogu
-         QuestGuru:HookScript("OnUpdate", function() QTR_PrepareReload() end);
+         ClassicQuestLog:HookScript("OnUpdate", function() QTR_PrepareReload() end);
       end
       return true;
    else
@@ -958,15 +996,17 @@ function QTR_GetQuestID()
       quest_ID = GetQuestID();
    end
    
-   if ((QuestLogFrame:IsVisible()) and ((quest_ID==nil) or (quest_ID==0))) then
+   if ((QuestLogFrame:IsVisible() or isClassicQuestLog()) and ((quest_ID==nil) or (quest_ID==0))) then
       local questTitle, level, questTag, isHeader, isCollapsed, isComplete, isDaily, questID = GetQuestLogTitle(GetQuestLogSelection());
       quest_ID = questID;
    end
    
---   quest_ID = QuestFrame.questID;
---   if (quest_ID==nil) then
---      quest_ID = QuestLogPopupDetailFrame.questID;
---   end
+   if ((quest_ID==nil) and (QuestFrame)) then
+      quest_ID = QuestFrame.questID;
+   end
+   if ((quest_ID==nil) and (QuestLogPopupDetailFrame)) then
+      quest_ID = QuestLogPopupDetailFrame.questID;
+   end
      
    if(quest_ID==nil) then
       if (isImmersion() and ImmersionFrame:IsVisible()) then
@@ -1006,7 +1046,6 @@ function QTR_GetQuestID()
       end   
    end   
    
-   
    return (quest_ID);
 end
 
@@ -1028,6 +1067,7 @@ function QTR_OnEvent(self, event, name, ...)
       print ("|cffffff00WoWpoPolsku-Quests ver. "..QTR_version.." - "..QTR_Messages.loaded);
       QTR:UnregisterEvent("ADDON_LOADED");
       QTR.ADDON_LOADED = nil;
+      QTR_Messages.itemchoose1 = Spr_Gender(QTR_Messages.itemchoose1);
       if (not isGetQuestID) then
          DetectEmuServer();
       end
@@ -1097,7 +1137,7 @@ function QTR_Gossip_Show()
                if (titleButton:GetText()) then
                   Hash = StringHash(titleButton:GetText());
                   if ( GS_Gossip[Hash] ) then   -- istnieje tłumaczenie tekstu dodatkowego
-                     titleButton:SetText(GS_Gossip[Hash]);
+                     titleButton:SetText(QTR_ExpandUnitInfo(GS_Gossip[Hash]));
                      titleButton:GetFontString():SetFont(QTR_Font2, 13);
                   else
                      QTR_GOSSIP[Nazwa_NPC..'@'..tostring(Hash)] = titleButton:GetText();
@@ -1116,16 +1156,16 @@ function QTR_EmptyQuestLog()
 end
 
 
--- Otworzono okienko QuestLogFrame lub QuestMapDetailsScrollFrame lub QuestGuru lub Immersion
+-- Otworzono okienko QuestLogFrame lub QuestMapDetailsScrollFrame lub ClassicQuestLog lub Immersion
 function QTR_QuestPrepare(zdarzenie)
    QTR_ToggleButton1:Show();        -- Show, bo mógł być ukryty przy pustym QuestLogu
-   if (isQuestGuru()) then
-      if (QTR_PS["other1"]=="0") then       -- jest aktywny QuestGuru, ale nie zezwolono na tłumaczenie
+   if (isClassicQuestLog()) then
+      if (QTR_PS["other1"]=="0") then       -- jest aktywny ClassicQuestLog, ale nie zezwolono na tłumaczenie
          QTR_ToggleButton3:Hide();
          return;
       else   
          QTR_ToggleButton3:Show();
-         if (QuestGuru:IsVisible() and (curr_trans=="0")) then
+         if (ClassicQuestLog:IsVisible() and (curr_trans=="0")) then
             QTR_Translate_Off(1);
             local questTitle, level, questTag, isHeader, isCollapsed, isComplete, isDaily, questID = GetQuestLogTitle(GetQuestLogSelection());
             if (QTR_quest_EN.id==questID) then
@@ -1251,7 +1291,7 @@ function QTR_QuestPrepare(zdarzenie)
          QTR_ToggleButton0:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          QTR_ToggleButton1:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          QTR_ToggleButton2:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
             QTR_ToggleButton3:Enable();
          end
@@ -1265,6 +1305,15 @@ function QTR_QuestPrepare(zdarzenie)
             QTR_ToggleButton5:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          end
          QTR_Translate_On(1);
+         if (QTR_first_show==0) then      -- pierwsze wyświetlenie, daj opóźnienie i przełączaj, bo nie wyświetla danych stałych 
+            if (not QTR_wait(0.2,QTR_ON_OFF)) then    -- przeładuj wpierw na OFF
+            ---
+            end
+            if (not QTR_wait(0.2,QTR_ON_OFF)) then    -- przeładuj ponownie na ON
+            ---
+            end
+            QTR_first_show=1;
+         end
       else	      -- nie ma przetłumaczonego takiego questu
          if (QTR_onDebug) then
             print('Nie znalazł tłumaczenia dla ID: '..str_ID);   
@@ -1272,7 +1321,7 @@ function QTR_QuestPrepare(zdarzenie)
          QTR_ToggleButton0:Disable();
          QTR_ToggleButton1:Disable();
          QTR_ToggleButton2:Disable();
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:Disable();
          end
          if (isImmersion()) then
@@ -1284,7 +1333,7 @@ function QTR_QuestPrepare(zdarzenie)
          QTR_ToggleButton0:SetText("Quest ID="..str_ID);
          QTR_ToggleButton1:SetText("Quest ID="..str_ID);
          QTR_ToggleButton2:SetText("Quest ID="..str_ID);
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:SetText("Quest ID="..str_ID);
          end
          if (isImmersion()) then
@@ -1306,7 +1355,7 @@ function QTR_QuestPrepare(zdarzenie)
       QTR_ToggleButton0:Disable();
       QTR_ToggleButton1:Disable();
       QTR_ToggleButton2:Disable();
---         if (isQuestGuru()) then
+--         if (isClassicQuestLog()) then
 --            QTR_ToggleButton3:Disable();
 --         end
 --         if (isImmersion()) then
@@ -1315,7 +1364,7 @@ function QTR_QuestPrepare(zdarzenie)
       if ( QTR_QuestData[str_ID] ) then	-- ale jest tłumaczenie w bazie
          QTR_ToggleButton1:SetText("Quest ID="..str_ID.." (EN)");
          QTR_ToggleButton2:SetText("Quest ID="..str_ID.." (EN)");
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:SetText("Quest ID="..str_ID.." (EN)");
          end
          if (isImmersion()) then
@@ -1327,7 +1376,7 @@ function QTR_QuestPrepare(zdarzenie)
       else
          QTR_ToggleButton1:SetText("Quest ID="..str_ID);
          QTR_ToggleButton2:SetText("Quest ID="..str_ID);
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:SetText("Quest ID="..str_ID);
          end
          if (isImmersion()) then
@@ -1393,7 +1442,7 @@ function QTR_Translate_On(typ)
          QTR_ToggleButton0:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          QTR_ToggleButton1:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          QTR_ToggleButton2:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
-         if (isQuestGuru()) then
+         if (isClassicQuestLog()) then
             QTR_ToggleButton3:SetText("Quest ID="..QTR_quest_LG.id.." ("..QTR_lang..")");
          end
          if (isImmersion()) then
@@ -1482,7 +1531,7 @@ function QTR_Translate_Off(typ)
          QTR_ToggleButton0:SetText("Quest ID="..QTR_quest_EN.id.." (EN)");
          QTR_ToggleButton1:SetText("Quest ID="..QTR_quest_EN.id.." (EN)");
          QTR_ToggleButton2:SetText("Quest ID="..QTR_quest_EN.id.." (EN)");
-         if (QuestGuru ~= nil ) then
+         if (ClassicQuestLog ~= nil ) then
             QTR_ToggleButton3:SetText("Quest ID="..QTR_quest_EN.id.." (EN)");
          end
          if (ImmersionFrame ~= nil ) then
@@ -1778,6 +1827,7 @@ end
 -- podmieniaj specjane znaki w tekście
 function QTR_ExpandUnitInfo(msg)
    msg = string.gsub(msg, "NEW_LINE", "\n");
+   msg = string.gsub(msg, "YOUR_NAME0", string.upper(QTR_PC["name1"]));
    msg = string.gsub(msg, "YOUR_NAME1", QTR_PC["name1"]);
    msg = string.gsub(msg, "YOUR_NAME2", QTR_PC["name2"]);
    msg = string.gsub(msg, "YOUR_NAME3", QTR_PC["name3"]);
